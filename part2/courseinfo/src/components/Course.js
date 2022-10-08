@@ -12,11 +12,13 @@ const Content = ({parts}) => {
     )
 }
 
-const Course = (props) => (
-    <div>
-        <Header text={props.name}/>
-        <Content parts={props.parts}/>
-    </div>
-)
+const Course = ({course}) => {
+    return (
+        <div>
+            <Header text={course.name}/>
+            <Content parts={course.parts}/>
+        </div>
+    )
+}
 
 export default Course
