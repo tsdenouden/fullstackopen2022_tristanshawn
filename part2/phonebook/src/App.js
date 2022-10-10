@@ -25,7 +25,7 @@ const PersonForm = ({formSubmit, formInput}) => {
 const Persons = ({persons, search}) => {
   return (
     <div>
-      <ul>
+      <ul style={{listStylePosition: "none", padding: 0}}>
         {persons.filter(person => 
             person.name.toLowerCase().includes(search.toLowerCase())).map(person =>
               <li key={person.id}>{person.name} {person.number}</li>
@@ -74,7 +74,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      
+
       <Filter search={newSearch} updateSearch={setSearch}/>
     
       <h2>add new</h2>
