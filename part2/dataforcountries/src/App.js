@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 const App = () => {
-
   const [search, setSearch] = useState('')
   const [countries, setCountries] = useState([])
   const [filteredCountries, setFilter] = useState([])
