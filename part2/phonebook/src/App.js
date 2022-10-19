@@ -2,6 +2,47 @@ import { useState, useEffect } from 'react'
 
 import personsService from './services/persons'
 
+const Notification = ({message, error=false}) => {
+  const notifSuccess = {
+    color: 'green',
+    backgroundColor: 'rgb(213, 227, 200)',
+    fontSize: 24,
+    border: '5px solid green',
+    borderRadius: '0.375rem',
+    padding: '10px',
+    marginBottom: '15px'
+  }
+
+  const notifError = {
+    color: 'red',
+    backgroundColor: 'rgb(242, 194, 189)',
+    fontSize: 24,
+    border: '5px solid red',
+    borderRadius: '0.375rem',
+    padding: '10px',
+    marginBottom: '15px'
+  }
+
+  
+  if (message === null) {
+    return null
+  }
+  
+  if (!error) {
+    return (
+      <div style={notifSuccess}>
+        {message}
+      </div>
+    )
+  } else {
+    return (
+      <div style={notifError}>
+        {message}
+      </div>
+    )
+  }
+}
+
 const Filter = ({search, updateSearch}) => {
   return (
     <div>
@@ -50,6 +91,9 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNumber] = useState('')
 
+  const [errorMessage, setError] = useState(null)
+  const [errorType, setErrorType] = useState(false)
+
   // fetch list of people from from db.json
   const fetchPersons = () => {
     personsService
@@ -72,7 +116,7 @@ const App = () => {
     if (names.includes(newName)) {
       if (window.confirm(`${newName} is already added to the phonebook,replace the old number with a new one?`)) {
         // get person object & change number
-        let person = persons.filter(person => person.name == newName)
+        let person = persons.filter(person => person.name === newName)
         person = person[0]
         person.number = newNumber
 
@@ -81,7 +125,9 @@ const App = () => {
           .updatePerson(person.id, person)
           .then(changedPerson => {
             // update persons state with array including changed person
-            setPersons(persons.map(person => (person.id == changedPerson.id)? person=changedPerson : person))
+            setPersons(persons.map(person => (person.id === changedPerson.id)? person=changedPerson : person))
+            setErrorType(false)
+            setError(`${person.name}'s information has been updated.`)
           })
       }
 
@@ -92,17 +138,17 @@ const App = () => {
     const nameObject = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1
     }
 
     // push person object to db.json & persons state
     personsService
       .addPerson(nameObject)
       .then(returnedPerson => {
-        console.log(returnedPerson)
         setPersons(persons.concat(returnedPerson))
         setNewName('')
         setNumber('')
+        setErrorType(false)
+        setError(`${returnedPerson.name} has been added to the phonebook.`)
       })    
   }
 
@@ -115,15 +161,26 @@ const App = () => {
           personsService
             .deletePerson(person.id)
             .then(info => {
-              setPersons(persons.filter(person => person.id != id))
+              setPersons(persons.filter(person => person.id !== id))
+              setErrorType(false)
+              setError(`${person.name} has been deleted from the phonebook.`)
             })
         }
+      })
+      .catch(error => {
+        let person = persons.filter(person => (person.id === id))
+        person = person[0]
+        setErrorType('true')
+        setError(`${person.name} has already been deleted from the phonebook.`)
+        setPersons(persons.filter(person => person.id !== id))
       })
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={errorMessage} error={errorType}/>
 
       <Filter search={newSearch} updateSearch={setSearch}/>
     

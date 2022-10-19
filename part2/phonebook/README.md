@@ -1,1 +1,1 @@
-phonebook exercises 2.6-2.10 && exercises 2.15-2.18
+phonebook exercises 2.6-2.10, 2.15-2.18, 2.19-2.20
