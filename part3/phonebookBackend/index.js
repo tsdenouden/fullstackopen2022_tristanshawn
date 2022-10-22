@@ -10,6 +10,9 @@ app.use(cors())
 morgan.token('jsondata', (req, res) => JSON.stringify(req.body))
 app.use(morgan('tiny'))
 
+
+// mongodb+srv://fullstack:<password>@cluster0.cgs2e1p.mongodb.net/phonebookApp?retryWrites=true&w=majority
+
 let phonebook = [
     { 
         "id": 1,
