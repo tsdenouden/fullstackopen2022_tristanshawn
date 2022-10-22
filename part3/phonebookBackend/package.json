@@ -4,6 +4,7 @@
   "description": "backend for phonebook app in express",
   "main": "index.js",
   "scripts": {
+    "build:ui": "rm -rf build && cd ../phonebookFrontend && npm run build && cp -r build ../phonebookBackend",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -4,6 +4,7 @@ const morgan = require('morgan')
 
 const app = express()
 
+app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 morgan.token('jsondata', (req, res) => JSON.stringify(req.body))
@@ -103,13 +104,10 @@ const randomNumber = (n1, n2) => {
 //   console.log(`Server running on port ${PORT}`)
 // })
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on ${PORT}`)
 })
-
-
-
 
 // random stuff for me to remember:
 // npm run dev -- start app with nodemon
