@@ -1,6 +1,10 @@
 const express = require('express')
+const morgan = require('morgan')
+
 const app = express()
 
+morgan.token('jsondata', (req, res) => JSON.stringify(req.body))
+app.use(morgan('tiny'))
 app.use(express.json())
 
 let phonebook = [
@@ -50,6 +54,8 @@ app.get('/api/persons/:id', (request, response) => {
         response.status(404).end()
     }
 })
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :jsondata'))
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
@@ -107,5 +113,6 @@ app.listen(PORT, () => {
 // npm run dev -- start app with nodemon
 // npm start -- start app without nodemon (doesn't restart server after changes)
 
-// app.use(express.json())  -- json parser takes the JSON data of a request and transforms it into a js object and
+// app.use(express.json())  -- middleware function
+// json parser takes the JSON data of a request and transforms it into a js object and
 // attaches it to the body property of the request object
