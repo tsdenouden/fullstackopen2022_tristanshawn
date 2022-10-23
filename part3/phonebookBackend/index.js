@@ -1,11 +1,14 @@
+// modules
 require('dotenv').config()
 const express = require('express')
 const Person = require('./models/person')
 const cors = require('cors')
 const morgan = require('morgan')
 
+// initialise express app
 const app = express()
 
+// middleware
 app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
@@ -21,6 +24,8 @@ app.get('/info', (request, response) => {
     })
 })
 
+// fetch all documents from the collection and
+// return them as an array of javascript objects
 app.get('/api/persons', (request, response, next) => {
   Person
     .find({})
@@ -30,6 +35,8 @@ app.get('/api/persons', (request, response, next) => {
     .catch(err => next(err))
 })
 
+// get a specific person document with the id specified in the request parameters
+// return the person object as a json string
 app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
     .then(returnedPerson => {
@@ -38,8 +45,10 @@ app.get('/api/persons/:id', (request, response, next) => {
     .catch(err => next(err))
 })
 
+// morgan middleware used for logging requests
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :jsondata'))
 
+// save person object as document in mongodb collection
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
@@ -55,6 +64,7 @@ app.post('/api/persons', (request, response, next) => {
     .catch(err => next(err))
 })
 
+// update a person document in the mongodb collection
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
@@ -69,6 +79,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     .catch(err => next(err))
 })
 
+// delete a person from mongodb collection
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
     .then(result => {
@@ -78,12 +89,14 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .catch(err => next(err))
 })
 
+// handle unknown endpoints by throwing response with 404 status code & error message
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
 
+// error handling
 const errorHandler = (error, request, response, next) => {
   console.log(error.message)
 
