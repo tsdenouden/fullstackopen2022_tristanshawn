@@ -15,32 +15,28 @@ app.use(morgan('tiny'))
 
 app.get('/info', (request, response) => {
     const date = new Date()
-    response.send(`Phonebook has info for ${Person.length} <br /> <br /> ${date}`)
+    Person.find({})
+        .then(persons => {
+            let count = persons.length
+            response.send(`Phonebook has info for ${count} <br /> <br /> ${date}`)
+        })
 }) 
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
     Person
         .find({})
         .then(persons => {
             response.json(persons)
         })
-        .catch(err => {
-            response.status(400).json({
-                error: 'cant fetch list of people'
-            })
-        })
+        .catch(err => next(err))
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
         .then(returnedPerson => {
             response.json(returnedPerson)
         })
-        .catch(err => {
-            response.status(400).json({
-                error: 'invalid id'
-            })
-        })
+        .catch(err => next(err))
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :jsondata'))
@@ -64,18 +60,53 @@ app.post('/api/persons', (request, response) => {
     })
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-    Person.findByIdAndDelete({ _id: mongoose.Types.ObjectId(request.params.id) })
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+
+    if (!body.name || !body.number) {
+        return response.status(400).json({
+            error: 'content missing'
+        })
+    }
+
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+        .then(updatedPerson => {
+            response.json(updatedPerson)
+        })
+        .catch(err => next(err))
+})
+
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndDelete(request.params.id)
         .then(result => {
             console.log(result)
             response.status(204).end()
         })
-        .catch(err => {
-            return response.status(400).json({
-                error: err
-            })
-        })
+        .catch(err => next(err))
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    console.log(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } 
+
+    next(error)
+}
+
+app.use(errorHandler)
 
 const randomNumber = (n1, n2) => {
     min = Math.ceil(n1)
