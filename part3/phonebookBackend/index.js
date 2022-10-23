@@ -1,4 +1,7 @@
+require('dotenv').config()
 const express = require('express')
+const mongoose = require('mongoose')
+const Person = require('./models/person')
 const cors = require('cors')
 const morgan = require('morgan')
 
@@ -10,55 +13,34 @@ app.use(cors())
 morgan.token('jsondata', (req, res) => JSON.stringify(req.body))
 app.use(morgan('tiny'))
 
-
-// mongodb+srv://fullstack:<password>@cluster0.cgs2e1p.mongodb.net/phonebookApp?retryWrites=true&w=majority
-
-let phonebook = [
-    { 
-        "id": 1,
-        "name": "Arto Hellas", 
-        "number": "040-123456"
-      },
-      { 
-        "id": 2,
-        "name": "Ada Lovelace", 
-        "number": "39-44-5323523"
-      },
-      { 
-        "id": 3,
-        "name": "Dan Abramov", 
-        "number": "12-43-234345"
-      },
-      { 
-        "id": 4,
-        "name": "Mary Poppendieck", 
-        "number": "39-23-6423122"
-      }
-]
-
-// example route:
-// app.get('/', (request, response) => {
-//     response.send('<h1>Hello World!</h1>')
-// })
-
 app.get('/info', (request, response) => {
     const date = new Date()
-    response.send(`Phonebook has info for ${phonebook.length} <br /> <br /> ${date}`)
+    response.send(`Phonebook has info for ${Person.length} <br /> <br /> ${date}`)
 }) 
 
 app.get('/api/persons', (request, response) => {
-    response.json(phonebook)
+    Person
+        .find({})
+        .then(persons => {
+            response.json(persons)
+        })
+        .catch(err => {
+            response.status(400).json({
+                error: 'cant fetch list of people'
+            })
+        })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = phonebook.find(person => person.id === id)
-
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    Person.findById(request.params.id)
+        .then(returnedPerson => {
+            response.json(returnedPerson)
+        })
+        .catch(err => {
+            response.status(400).json({
+                error: 'invalid id'
+            })
+        })
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :jsondata'))
@@ -66,34 +48,33 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :j
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
-    if (!body.name || !body.number) {
+    if (body.name === undefined || body.number === undefined) {
         return response.status(400).json({
             error: 'content missing'
         })
     }
 
-    const check = phonebook.find(person => person.name === body.name)
-    if (check) {
-        return response.status(400).json({
-            error: 'name is already in phonebook'
-        })
-    }
-
-    const newPerson = {
-        id: randomNumber(100000000,100000000000000),
+    const person = new Person({
         name: body.name,
         number: body.number
-    }
+    })
 
-    phonebook = phonebook.concat(newPerson)
-    response.json(newPerson)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    phonebook = phonebook.filter(person => person.id !== id)
-
-    response.status(204).end()
+    Person.findByIdAndDelete({ _id: mongoose.Types.ObjectId(request.params.id) })
+        .then(result => {
+            console.log(result)
+            response.status(204).end()
+        })
+        .catch(err => {
+            return response.status(400).json({
+                error: err
+            })
+        })
 })
 
 const randomNumber = (n1, n2) => {
@@ -102,20 +83,7 @@ const randomNumber = (n1, n2) => {
     return Math.floor(Math.random() * (max - min) + min)
 }
 
-// const PORT = 3001
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`)
-// })
-
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on ${PORT}`)
 })
-
-// random stuff for me to remember:
-// npm run dev -- start app with nodemon
-// npm start -- start app without nodemon (doesn't restart server after changes)
-
-// app.use(express.json())  -- middleware function
-// json parser takes the JSON data of a request and transforms it into a js object and
-// attaches it to the body property of the request object

@@ -5,8 +5,6 @@ if (process.argv.length < 3) {
     process.exit(1)
 }
 
-
-
 const password = process.argv[2]
 
 const url = `mongodb+srv://fullstack:${password}@cluster0.cgs2e1p.mongodb.net/?retryWrites=true&w=majority`
