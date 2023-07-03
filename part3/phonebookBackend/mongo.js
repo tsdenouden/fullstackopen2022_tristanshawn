@@ -7,7 +7,7 @@ if (process.argv.length < 3) {
 
 const password = process.argv[2]
 
-const url = `mongodb+srv://fullstack:${password}@cluster0.cgs2e1p.mongodb.net/?retryWrites=true&w=majority`
+const url = `mongodb+srv://fullstackuser:${password}@cluster0.cgs2e1p.mongodb.net/?retryWrites=true&w=majority`
 
 const personSchema = new mongoose.Schema({
   name: String,
